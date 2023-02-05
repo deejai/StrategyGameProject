@@ -56,5 +56,10 @@ func _input(event):
 				selection_rect.set_end_point(Vector2(clamped_x, clamped_y))
 
 func box_select():
-	selection_rect.release()
-	pass
+	var space = get_world_2d().direct_space_state
+	var query = PhysicsShapeQueryParameters2D.new()
+	query.set_shape(selection_rect.collision_shape.shape)
+	query.transform = Transform2D(0, (selection_rect.start_point + selection_rect.end_point) / 2)
+	var selected = space.intersect_shape(query)
+	print(selected)
+	selection_rect.visible = false
