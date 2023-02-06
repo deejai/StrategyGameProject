@@ -15,6 +15,10 @@ run/main_scene="res://Main/Arena.tscn"
 config/features=PackedStringArray("4.0", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+mouse_cursor/custom_image="res://Assets/sword_cursor.png"
+
 [dotnet]
 
 project/assembly_name="StrategyGameProject"

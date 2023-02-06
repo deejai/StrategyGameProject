@@ -2,11 +2,14 @@ extends Node2D
 
 var arena_unit = load("res://Main/ArenaUnit.tscn")
 
-@onready var unit_layer = $UnitLayer
 @onready var selection_rect = $HUDLayer/SelectionRect
 @onready var viewport = $WireFrame/Viewport
+@onready var battlefield_layer = $WireFrame/Viewport
 
 var viewport_input_ctx = InputContext.new()
+
+@onready var battlefield_space = battlefield_layer.get_world_2d().direct_space_state
+var physics_query = PhysicsShapeQueryParameters2D.new()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -14,12 +17,11 @@ func _ready():
 		print(i)
 		var new_unit = arena_unit.instantiate()
 		new_unit.position = Vector2(200 + 100 * (i%2) + 50 * (i/2), 400 + 100 * (i/2))
-		unit_layer.add_child(new_unit)
+		battlefield_layer.add_child(new_unit)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	pass
-
 
 func _on_viewport_gui_input(event):
 	var ctx = viewport_input_ctx
@@ -56,10 +58,14 @@ func _input(event):
 				selection_rect.set_end_point(Vector2(clamped_x, clamped_y))
 
 func box_select():
-	var space = get_world_2d().direct_space_state
-	var query = PhysicsShapeQueryParameters2D.new()
-	query.set_shape(selection_rect.collision_shape.shape)
-	query.transform = Transform2D(0, (selection_rect.start_point + selection_rect.end_point) / 2)
-	var selected = space.intersect_shape(query)
-	print(selected)
+	var t_start = Time.get_ticks_usec()
 	selection_rect.visible = false
+	physics_query.set_shape(selection_rect.collision_shape.shape)
+	physics_query.transform = Transform2D(0, (selection_rect.start_point + selection_rect.end_point) / 2)
+	var selected = battlefield_space.intersect_shape(physics_query)
+	var t_end = Time.get_ticks_usec()
+	print(selected)
+	print("Box select took ", t_end-t_start, " microseconds")
+
+func click_select():
+	pass
