@@ -1,0 +1,67 @@
+[gd_scene load_steps=9 format=3 uid="uid://ct6y8vyk3j6ga"]
+
+[ext_resource type="Script" path="res://Game/Views/Arena/ArenaUnit.gd" id="1_66jbc"]
+[ext_resource type="Texture2D" uid="uid://d4krvw8lw3mtl" path="res://Assets/characters/knight_16x16-spritesheet_no-bkg_char-set-1.png" id="2_6yj0k"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hhixr"]
+radius = 21.0
+height = 60.0
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u0qs1"]
+atlas = ExtResource("2_6yj0k")
+region = Rect2(0, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eja3v"]
+atlas = ExtResource("2_6yj0k")
+region = Rect2(16, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_13exw"]
+atlas = ExtResource("2_6yj0k")
+region = Rect2(32, 48, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hs77n"]
+atlas = ExtResource("2_6yj0k")
+region = Rect2(48, 48, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_j22du"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u0qs1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eja3v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_13exw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hs77n")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="CharacterBody2D" type="CharacterBody2D"]
+motion_mode = 1
+script = ExtResource("1_66jbc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_hhixr")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_j22du")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+avoidance_enabled = true
+radius = 30.0
+
+[node name="ProcessTimer" type="Timer" parent="."]
+wait_time = 0.1
+autostart = true
+
+[connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_target_reached"]
+[connection signal="velocity_computed" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_velocity_computed"]
+[connection signal="timeout" from="ProcessTimer" to="." method="_on_process_timer_timeout"]

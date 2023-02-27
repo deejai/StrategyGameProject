@@ -11,13 +11,17 @@ config_version=5
 [application]
 
 config/name="StrategyGameProject"
-run/main_scene="res://Main/Arena.tscn"
+run/main_scene="res://Game/Views/Arena/Arena.tscn"
 config/features=PackedStringArray("4.0", "Forward Plus")
 config/icon="res://icon.svg"
 
 [display]
 
+window/size/viewport_width=1024
+window/size/viewport_height=576
+window/size/resizable=false
 mouse_cursor/custom_image="res://Assets/sword_cursor.png"
+window/stretch/mode="viewport"
 
 [dotnet]
 
@@ -25,4 +29,5 @@ project/assembly_name="StrategyGameProject"
 
 [rendering]
 
+textures/default_filters/anisotropic_filtering_level=0
 textures/canvas_textures/default_texture_filter=0

@@ -1,4 +1,4 @@
-class_name InputContext
+class_name ClickContext
 
 var click_pos_start: Vector2
 var click_time_start: float
