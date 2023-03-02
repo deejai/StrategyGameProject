@@ -43,17 +43,15 @@ func _on_viewport_gui_input(event):
 			if event.pressed:
 				if not selected_units.is_empty():
 					if selected_units[0].alliance == Definitions.Alliance.PLAYER:
-						command_selected_units(Command.Type.MOVE_POINT, event.position)
+						command_selected_units(Command.Type.MOVE_POINT, event.global_position)
 
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.pressed == false:
 			if viewport_leftclick_ctx.engaged:
 				if viewport_leftclick_ctx.dragging:
-					print("drew rect")
 					set_selected_units(box_select())
 				else:
-					print("clicked")
 					set_selected_units(click_select())
 
 				viewport_leftclick_ctx.reset()
