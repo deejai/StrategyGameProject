@@ -20,10 +20,10 @@ var selected_units: Array[ArenaUnit] = []
 func _ready():
 	click_query_shape.radius = 5.0
 
-	for i in range(4):
+	for i in range(6):
 		print(i)
 		var new_unit = arena_unit.instantiate()
-		new_unit.position = viewport.position + Vector2(200 + 100 * (i%2) + 50 * (i/2), 64 + 100 * (i/2))
+		new_unit.position = viewport.position + Vector2(200 + 100 * (i%2) + 50 * (i/2), 64 + 50 * (i/2))
 		arena_layer.add_child(new_unit)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -88,21 +88,24 @@ func click_select():
 	physics_query.set_shape(click_query_shape)
 	physics_query.transform = Transform2D(0, query_pos)
 	var selected: Array = arena_space.intersect_shape(physics_query)
-	var selected_unit_dict = selected.reduce(
-		func(selected_unit_dict, dict):
-			var obj = dict.collider
-			var selected_obj = selected_unit_dict.collider
-			if obj is ArenaUnit:
-				if obj.alliance == Definitions.Alliance.PLAYER:
-					if selected_obj.alliance != Definitions.Alliance.PLAYER:
-						return dict
-					elif obj.global_position.distance_squared_to(query_pos) < selected_obj.global_position.distance_squared_to(query_pos):
-						return dict
-				elif obj.global_position.distance_squared_to(query_pos) < selected_obj.global_position.distance_squared_to(query_pos):
-					return dict
+	var selected_unit_dict: Variant = null
 
-			return selected_unit_dict
-	, null)
+	for dict in selected:
+		var obj = dict.collider
+		if obj is ArenaUnit:
+			var selected_obj = null if selected_unit_dict == null else selected_unit_dict.collider
+			if selected_obj == null:
+				selected_unit_dict = dict
+				continue
+
+			if obj.alliance == Definitions.Alliance.PLAYER:
+				if selected_obj.alliance != Definitions.Alliance.PLAYER:
+					selected_unit_dict = dict
+				elif obj.global_position.distance_squared_to(query_pos) < selected_obj.global_position.distance_squared_to(query_pos):
+					selected_unit_dict = dict
+			elif obj.global_position.distance_squared_to(query_pos) < selected_obj.global_position.distance_squared_to(query_pos):
+				selected_unit_dict = dict
+
 	var selected_unit_arr: Array[ArenaUnit] = []
 	if selected_unit_dict != null:
 		selected_unit_arr.append(selected_unit_dict.collider)
@@ -120,6 +123,26 @@ func set_selected_units(new_selected_units: Array[ArenaUnit]):
 		selected_units.append(selected_unit)
 
 func command_selected_units(type: Command.Type, target=null):
-	for selected_unit in selected_units:
-		if is_instance_valid(selected_unit):
-			selected_unit.set_task(Command.Type.MOVE_POINT, target)
+	var valid_units: Array[ArenaUnit] = selected_units.filter(func(u): return is_instance_valid(u))
+
+	var n_valid_units: int = len(valid_units)
+
+	# spread out target positions
+	if type in [Command.Type.MOVE_POINT, Command.Type.ATTACK_MOVE]:
+		var avg_pos_vec: Vector2 = Vector2.ZERO
+		for selected_unit in valid_units:
+			avg_pos_vec += target - selected_unit.position
+
+		avg_pos_vec = avg_pos_vec / n_valid_units
+		var orthog_vec = avg_pos_vec.orthogonal().normalized()
+		valid_units.sort_custom(func(a, b): return a.position.distance_to(orthog_vec * 99999.0) > b.position.distance_to(orthog_vec * 99999.0))
+
+		var x: int = 0
+		for selected_unit in valid_units:
+			if is_instance_valid(selected_unit):
+				selected_unit.set_task(type, target + orthog_vec * (min(60.0, 0.2 * avg_pos_vec.length())) * (-n_valid_units/2.0 + x))
+				x += 1
+	else:
+		for selected_unit in valid_units:
+			if is_instance_valid(selected_unit):
+				selected_unit.set_task(type, target)

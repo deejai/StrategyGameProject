@@ -234,8 +234,12 @@ scale = Vector2(1.5625, 0.976563)
 sprite_frames = SubResource("SpriteFrames_vys5n")
 
 [node name="NavRays" type="Node2D" parent="."]
+visible = false
 
-[node name="RayCast2D" type="RayCast2D" parent="NavRays"]
+[node name="SpriteDirectionTimer" type="Timer" parent="."]
+wait_time = 0.18
+one_shot = true
+autostart = true
 
 [connection signal="link_reached" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_link_reached"]
 [connection signal="path_changed" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_path_changed"]
