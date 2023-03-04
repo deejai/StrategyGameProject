@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://diy53gfvbephm"]
+[gd_scene load_steps=13 format=3 uid="uid://diy53gfvbephm"]
 
 [ext_resource type="Script" path="res://Game/Views/Arena/Arena.gd" id="1_7fl8o"]
 [ext_resource type="Texture2D" uid="uid://cwgm0dwilia3h" path="res://Assets/Tiles/[64x64] Dungeon Bricks Full.png" id="2_3xusy"]
@@ -121,9 +121,9 @@ tile_size = Vector2i(64, 64)
 sources/0 = SubResource("TileSetAtlasSource_y2lci")
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_3qq3m"]
-vertices = PackedVector2Array(40, 53, 723, 51, 729, 426, 37, 427)
+vertices = PackedVector2Array(38, 51, 730, 51, 729, 426, 37, 427)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(40, 53, 723, 51, 729, 426, 37, 427)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(38, 51, 730, 51, 729, 426, 37, 427)])
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_h3ska"]
 normal = Vector2(1, 0)
@@ -135,6 +135,12 @@ normal = Vector2(0, 1)
 normal = Vector2(-1, 0)
 
 [sub_resource type="WorldBoundaryShape2D" id="WorldBoundaryShape2D_2hkw6"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_rhjq1"]
+friction = 0.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5wxiw"]
+radius = 66.0076
 
 [node name="Arena" type="Node2D"]
 script = ExtResource("1_7fl8o")
@@ -161,20 +167,27 @@ navigation_polygon = SubResource("NavigationPolygon_3qq3m")
 [node name="StaticBody2D" type="StaticBody2D" parent="ArenaLayer"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaLayer/StaticBody2D"]
-position = Vector2(20, 214)
+position = Vector2(17, 214)
 shape = SubResource("WorldBoundaryShape2D_h3ska")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="ArenaLayer/StaticBody2D"]
-position = Vector2(348, 32)
+position = Vector2(348, 29)
 shape = SubResource("WorldBoundaryShape2D_mvm7w")
 
 [node name="CollisionShape2D3" type="CollisionShape2D" parent="ArenaLayer/StaticBody2D"]
-position = Vector2(749, 229)
+position = Vector2(750, 229)
 shape = SubResource("WorldBoundaryShape2D_n4okj")
 
 [node name="CollisionShape2D4" type="CollisionShape2D" parent="ArenaLayer/StaticBody2D"]
-position = Vector2(348, 448)
+position = Vector2(348, 451)
 shape = SubResource("WorldBoundaryShape2D_2hkw6")
+
+[node name="StaticBody2D2" type="RigidBody2D" parent="ArenaLayer"]
+physics_material_override = SubResource("PhysicsMaterial_rhjq1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ArenaLayer/StaticBody2D2"]
+position = Vector2(284, 212)
+shape = SubResource("CircleShape2D_5wxiw")
 
 [node name="HUDLayer" type="CanvasLayer" parent="."]
 layer = 10

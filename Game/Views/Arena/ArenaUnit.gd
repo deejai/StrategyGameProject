@@ -37,6 +37,8 @@ var closest_dist: float = 0.0
 
 var last_pos: Vector2 = position
 
+var displacements: Array = [100.0, 100.0, 100.0, 100.0, 100.0]
+
 func _ready():
 	for navray_angle in navray_angles:
 		var navray: RayCast2D = RayCast2D.new()
@@ -78,13 +80,10 @@ func _process(delta):
 func _physics_process(delta):
 	var next_pos = nav_agent.get_next_path_position()
 	var dist_to_next: float = position.distance_to(next_pos)
-
-	var should_update_sprite_direction: bool = false
+	var displacement: float = position.distance_to(last_pos)
 
 	correction_rot *= pow(.01, delta)
 	close_enough_modifier = max(0.0, close_enough_modifier - max_speed * delta * 0.2)
-
-	var displacement: float = position.distance_to(last_pos)
 
 	speed = min(speed + max_speed * 2.0 * delta, max(20.0, dist_to_next * 2.0), max_speed, displacement/delta + max_speed * 2.0 * delta)
 
@@ -136,8 +135,8 @@ func _physics_process(delta):
 			else:
 				navray.modulate.g = 1.0
 
-		if something_in_front and abs(correction_rot_step) < correction_rot_mult:
-			correction_rot_step += correction_rot_mult
+		if something_in_front and abs(correction_rot_step) < correction_rot_mult * 0.5:
+			correction_rot_step += 2 * correction_rot_mult
 
 		correction_rot += correction_rot_step
 
@@ -162,7 +161,7 @@ func _draw():
 #	if selected:
 #		draw_arc(Vector2.ZERO, nav_agent.radius, 0, 2*PI, 50, Color.WHITE)
 
-#	draw_circle(nav_agent.get_next_path_position() - position, 15.0 + close_enough_modifier, Color(1,0,0,0.5))
+	draw_circle(nav_agent.get_next_path_position() - position, 15.0 + close_enough_modifier, Color(1,0,0,0.5))
 
 func _on_process_timer_timeout():
 	match command.type:

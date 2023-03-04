@@ -124,7 +124,6 @@ func set_selected_units(new_selected_units: Array[ArenaUnit]):
 
 func command_selected_units(type: Command.Type, target=null):
 	var valid_units: Array[ArenaUnit] = selected_units.filter(func(u): return is_instance_valid(u))
-
 	var n_valid_units: int = len(valid_units)
 
 	# spread out target positions
