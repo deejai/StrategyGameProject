@@ -1,12 +1,14 @@
-[gd_scene load_steps=28 format=3 uid="uid://ct6y8vyk3j6ga"]
+[gd_scene load_steps=32 format=3 uid="uid://ct6y8vyk3j6ga"]
 
 [ext_resource type="Script" path="res://Game/Views/Arena/ArenaUnit.gd" id="1_66jbc"]
 [ext_resource type="Texture2D" uid="uid://d4krvw8lw3mtl" path="res://Assets/characters/knight_16x16-spritesheet_no-bkg_char-set-1.png" id="2_6yj0k"]
 [ext_resource type="Texture2D" uid="uid://bjtmiauadaatb" path="res://Assets/selection_circle.png" id="3_kyoak"]
+[ext_resource type="AudioStream" uid="uid://ct03kausyh0q5" path="res://Assets/Audio/Voice/yessir1.mp3" id="4_v0oaj"]
+[ext_resource type="AudioStream" uid="uid://b3l3q0hm1s4ei" path="res://Assets/Audio/Voice/ok.mp3" id="5_rj417"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_hhixr"]
-radius = 21.0
-height = 60.0
+radius = 19.0
+height = 56.0
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pkcxa"]
 atlas = ExtResource("2_6yj0k")
@@ -206,7 +208,19 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_itgpf"]
+streams_count = 1
+stream_0/stream = ExtResource("4_v0oaj")
+stream_0/weight = 1.0
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_greg2"]
+streams_count = 1
+random_pitch = 1.05
+stream_0/stream = ExtResource("5_rj417")
+stream_0/weight = 1.0
+
 [node name="CharacterBody2D" type="CharacterBody2D"]
+y_sort_enabled = true
 motion_mode = 1
 script = ExtResource("1_66jbc")
 
@@ -220,6 +234,7 @@ sprite_frames = SubResource("SpriteFrames_j22du")
 animation = &"idle_down"
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
+path_max_distance = 2000.0
 radius = 30.0
 
 [node name="ProcessTimer" type="Timer" parent="."]
@@ -234,14 +249,20 @@ scale = Vector2(1.5625, 0.976563)
 sprite_frames = SubResource("SpriteFrames_vys5n")
 
 [node name="NavRays" type="Node2D" parent="."]
-visible = false
 
 [node name="SpriteDirectionTimer" type="Timer" parent="."]
 wait_time = 0.18
 one_shot = true
 autostart = true
 
+[node name="VoiceSelected" type="AudioStreamPlayer2D" parent="."]
+stream = SubResource("AudioStreamRandomizer_itgpf")
+
+[node name="VoiceMove" type="AudioStreamPlayer2D" parent="."]
+stream = SubResource("AudioStreamRandomizer_greg2")
+
 [connection signal="link_reached" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_link_reached"]
+[connection signal="navigation_finished" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_navigation_finished"]
 [connection signal="path_changed" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_path_changed"]
 [connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_target_reached"]
 [connection signal="timeout" from="ProcessTimer" to="." method="_on_process_timer_timeout"]

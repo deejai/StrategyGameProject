@@ -13,8 +13,7 @@ var command: Command = Command.new()
 @onready var sprite_direction_timer: Timer = $SpriteDirectionTimer
 var ready_to_process: bool = false
 
-enum NavrayDir {FORWARD, CCW_NARROW, CW_NARROW, CCW_Wide, CW_Wide, CCW_Orthog, CW_Orthog}
-var navray_angles: Array[float] = [0.0, -PI/8, PI/8, -PI/4, PI/4, -PI/2, PI/2]
+var navray_angles: Array[float] = [0.0, -PI/8, PI/8, -PI/4, PI/4, -3*PI/8, 3*PI/8, -PI/2, PI/2, -5*PI/8, 5*PI/8, -3*PI/4, 3*PI/4]
 @onready var navrays: Array[RayCast2D]
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D
 @onready var navrays_node: Node2D = $NavRays
@@ -22,23 +21,28 @@ var navray_angles: Array[float] = [0.0, -PI/8, PI/8, -PI/4, PI/4, -PI/2, PI/2]
 @onready var char_sprite: AnimatedSprite2D = $CharacterSprite
 @onready var selection_circle: AnimatedSprite2D = $SelectionCircle
 
+@onready var voice_selected: AudioStreamPlayer2D = $VoiceSelected
+@onready var voice_move: AudioStreamPlayer2D = $VoiceMove
+var delay_queue: Array[Dictionary] = []
+
+var arrival_direction: Variant = null
 var nav_direction: Vector2 = Vector2.DOWN
-var sprite_direction: Vector2 = Vector2.DOWN
 var stopped: bool = true
 var was_selected: bool = false
 var selected: bool = false
 
 var correction_rot: float = 0.0
+var close_enough_modifier: float = 0.0
+var closest_dist: float = 0.0
 
 var last_pos: Vector2 = position
-var stuck_timer: float = 0.0
 
 func _ready():
-	for i in NavrayDir.values():
+	for navray_angle in navray_angles:
 		var navray: RayCast2D = RayCast2D.new()
-		var target_position: Vector2 = (Vector2.RIGHT * 60.0).rotated(navray_angles[i])
+		var target_position: Vector2 = (Vector2.RIGHT * 60.0).rotated(navray_angle)
 		print(target_position)
-	
+
 		var poly: Polygon2D = Polygon2D.new()
 		poly.polygon = PackedVector2Array([
 			Vector2.ZERO,
@@ -57,41 +61,54 @@ func _ready():
 	nav_agent.target_position = position
 
 func _process(delta):
+	z_index = position.y
 	queue_redraw()
 	if was_selected != selected:
 		selection_circle.visible = selected
 		was_selected = selected
 
+	for item in delay_queue:
+		item.timer = max(0.0, item.timer - delta)
+		if item.timer == 0.0:
+			item.payload.call()
+
+	while not delay_queue.is_empty() and delay_queue[0].timer == 0.0:
+		delay_queue.pop_front()
+
 func _physics_process(delta):
 	var next_pos = nav_agent.get_next_path_position()
+	var dist_to_next: float = position.distance_to(next_pos)
 
 	var should_update_sprite_direction: bool = false
 
 	correction_rot *= pow(.01, delta)
+	close_enough_modifier = max(0.0, close_enough_modifier - max_speed * delta * 0.2)
 
-	var force_stop: bool = false
+	var displacement: float = position.distance_to(last_pos)
 
-	var movement: float = position.distance_to(last_pos)
+	speed = min(speed + max_speed * 2.0 * delta, max(20.0, dist_to_next * 2.0), max_speed, displacement/delta + max_speed * 2.0 * delta)
 
-	if next_pos != position:
-		if movement > speed * delta * 0.8:
-			stuck_timer = 0.0
+	if not stopped:
+		if dist_to_next >= closest_dist - delta * max_speed * 0.2:
+			if position.distance_to(last_pos) < max_speed * delta * 0.5:
+				close_enough_modifier += 55.0 * delta
+			else:
+				close_enough_modifier += min(55.0, max_speed * 0.3) * delta
 		else:
-			stuck_timer += delta
-
-		if stuck_timer >= 1.2:
-			force_stop = true
+			closest_dist = dist_to_next
 
 	var flock_members_ahead: Dictionary = {}
 
-	if force_stop or position.distance_to(next_pos) < 35.0:
+	if stopped or dist_to_next < 15.0 + close_enough_modifier:
 		velocity = Vector2.ZERO
 
 		if not stopped:
 			stopped = true
+			close_enough_modifier = 0.0
+			if arrival_direction != null:
+				set_nav_direction(arrival_direction)
+				arrival_direction = null
 	else:
-		stopped = false
-
 		var flock_guided_nav_vec: Vector2 = position.direction_to(next_pos) * 3
 		var something_in_front: bool = false
 		var correction_rot_step: float = 0.0
@@ -124,25 +141,10 @@ func _physics_process(delta):
 
 		correction_rot += correction_rot_step
 
-		set_nav_direction(flock_guided_nav_vec.rotated(correction_rot) if velocity.length_squared() > 20.0 else sprite_direction)
+		if velocity.length_squared() > 20.0:
+			set_nav_direction(flock_guided_nav_vec.rotated(correction_rot))
 
-		speed = min(speed + max_speed * 2.0 * delta, max(20.0, position.distance_to(next_pos) * 2.0), max_speed)
 		velocity = nav_direction * speed
-
-		if abs(velocity.x) > abs(velocity.y):
-			if velocity.x > 0:
-				if sprite_direction != Vector2.RIGHT:
-					sprite_direction = Vector2.RIGHT
-			else:
-				if sprite_direction != Vector2.LEFT:
-					sprite_direction = Vector2.LEFT
-		else:
-			if velocity.y > 0:
-				if sprite_direction != Vector2.DOWN:
-					sprite_direction = Vector2.DOWN
-			else:
-				if sprite_direction != Vector2.UP:
-					sprite_direction = Vector2.UP
 
 
 	if sprite_direction_timer.is_stopped():
@@ -159,13 +161,15 @@ func _draw():
 #	draw_dashed_line(Vector2(-50,50), Vector2(50, -50), Color.WHITE)
 #	if selected:
 #		draw_arc(Vector2.ZERO, nav_agent.radius, 0, 2*PI, 50, Color.WHITE)
-#
-	draw_circle(nav_agent.get_next_path_position() - position, 10.0, Color.RED)
+
+#	draw_circle(nav_agent.get_next_path_position() - position, 15.0 + close_enough_modifier, Color(1,0,0,0.5))
 
 func _on_process_timer_timeout():
 	match command.type:
 		Command.Type.MOVE_POINT:
 			if command.is_new:
+				queue_voice(voice_move)
+				arrival_direction = position.direction_to(command.target_position)
 				nav_agent.target_position = command.target_position
 				command.is_new = false
 				reset_nav_progress()
@@ -174,19 +178,21 @@ func set_task(type: Command.Type, target=null):
 	command.set_task(type, target)
 
 func _on_navigation_agent_2d_target_reached():
-	update_sprite_direction()
 	set_task(Command.Type.NONE)
 
 func update_sprite_direction():
-	match(sprite_direction):
-		Vector2.UP:
-			char_sprite.animation = "walk_up" if velocity.length_squared() > 10.0 else "idle_up"
-		Vector2.DOWN:
-			char_sprite.animation = "walk_down" if velocity.length_squared() > 10.0 else "idle_down"
-		Vector2.LEFT:
-			char_sprite.animation = "walk_left" if velocity.length_squared() > 10.0 else "idle_left"
-		Vector2.RIGHT:
-			char_sprite.animation = "walk_right" if velocity.length_squared() > 10.0 else "idle_right"
+	var above_motion_threshold: bool = speed > 10.0
+
+	if abs(nav_direction.x) > abs(nav_direction.y):
+		if nav_direction.x > 0:
+			char_sprite.animation = "walk_right" if above_motion_threshold else "idle_right"
+		else:
+			char_sprite.animation = "walk_left" if above_motion_threshold else "idle_left"
+	else:
+		if nav_direction.y > 0:
+			char_sprite.animation = "walk_down" if above_motion_threshold else "idle_down"
+		else:
+			char_sprite.animation = "walk_up" if above_motion_threshold else "idle_up"
 
 func set_nav_direction(direction: Vector2):
 	nav_direction = direction.normalized()
@@ -199,5 +205,18 @@ func _on_navigation_agent_2d_link_reached(details):
 	print("link reached")
 
 func reset_nav_progress():
-	print(str("reset at ", stuck_timer))
-	stuck_timer = 0.0
+	closest_dist = position.distance_to(nav_agent.target_position)
+	close_enough_modifier = 0.0
+	stopped = false
+
+func select(mute: bool = false):
+	selected = true
+	if not mute:
+		queue_voice(voice_selected)
+
+func queue_voice(voice: AudioStreamPlayer2D):
+	delay_queue.push_back({"timer": randf() * 0.2, "payload": func(): voice.play()})
+
+
+func _on_navigation_agent_2d_navigation_finished():
+	print("arrived")

@@ -119,7 +119,7 @@ func set_selected_units(new_selected_units: Array[ArenaUnit]):
 	selected_units = []
 
 	for selected_unit in new_selected_units:
-		selected_unit.selected = true
+		selected_unit.select()
 		selected_units.append(selected_unit)
 
 func command_selected_units(type: Command.Type, target=null):
@@ -140,7 +140,7 @@ func command_selected_units(type: Command.Type, target=null):
 		var x: int = 0
 		for selected_unit in valid_units:
 			if is_instance_valid(selected_unit):
-				selected_unit.set_task(type, target + orthog_vec * (min(60.0, 0.2 * avg_pos_vec.length())) * (-n_valid_units/2.0 + x))
+				selected_unit.set_task(type, target + orthog_vec * (min(40.0, 0.2 * avg_pos_vec.length())) * (-n_valid_units/2.0 + x))
 				x += 1
 	else:
 		for selected_unit in valid_units:
