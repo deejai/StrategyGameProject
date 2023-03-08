@@ -43,7 +43,6 @@ func _ready():
 	for navray_angle in navray_angles:
 		var navray: RayCast2D = RayCast2D.new()
 		var target_position: Vector2 = (Vector2.RIGHT * 60.0).rotated(navray_angle)
-		print(target_position)
 
 		var poly: Polygon2D = Polygon2D.new()
 		poly.polygon = PackedVector2Array([
@@ -78,7 +77,8 @@ func _process(delta):
 		delay_queue.pop_front()
 
 func _physics_process(delta):
-	var next_pos = nav_agent.get_next_path_position()
+#	var next_pos = nav_agent.get_next_path_position()
+	var next_pos = nav_agent.target_position
 	var dist_to_next: float = position.distance_to(next_pos)
 	var displacement: float = position.distance_to(last_pos)
 
@@ -198,10 +198,12 @@ func set_nav_direction(direction: Vector2):
 	navrays_node.rotation = nav_direction.angle()
 
 func _on_navigation_agent_2d_path_changed():
-	print("path changed")
+#	print("path changed")
+	pass
 
 func _on_navigation_agent_2d_link_reached(details):
-	print("link reached")
+#	print("link reached")
+	pass
 
 func reset_nav_progress():
 	closest_dist = position.distance_to(nav_agent.target_position)

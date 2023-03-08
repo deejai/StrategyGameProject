@@ -16,9 +16,34 @@ var selected_units: Array[ArenaUnit] = []
 
 @export var point_select_collider: CollisionShape2D
 
+@onready var nav_area: ReferenceRect = $WireFrame/NavArea
+var nav_node_scene: PackedScene = load("res://Game/Views/Arena/NavNode.tscn")
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	click_query_shape.radius = 5.0
+
+	var nav_rect: Rect2 = nav_area.get_global_rect()
+	var nav_rect_size: Vector2 = nav_rect.size
+	var nav_origin: Vector2 = nav_area.global_position
+	var n_astar_node_cols: int = 40
+	var n_astar_node_rows: int = roundi(n_astar_node_cols * 1.0  * (nav_rect_size.y/nav_rect_size.x))
+	var astar_node_h_spacing: float = nav_rect_size.x / (1.0 * n_astar_node_cols)
+	var astar_node_v_spacing: float = nav_rect_size.y / (1.0 * n_astar_node_rows - 1.0)
+	print(n_astar_node_cols)
+	print(n_astar_node_rows)
+	for row_n in n_astar_node_rows:
+		var v_pos: float = astar_node_v_spacing * row_n
+		var h_offset: float = 0.5 * astar_node_h_spacing * (row_n % 2)
+		for col_n in n_astar_node_cols:
+			var node_pos: Vector2 = nav_origin + Vector2(
+				h_offset + astar_node_h_spacing * col_n,
+				v_pos
+			)
+
+			var new_node: Node2D = nav_node_scene.instantiate()
+			arena_layer.add_child(new_node)
+			new_node.global_position = node_pos
 
 	for i in range(6):
 		print(i)
@@ -42,8 +67,9 @@ func _on_viewport_gui_input(event):
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			if event.pressed:
 				if not selected_units.is_empty():
-					if selected_units[0].alliance == Definitions.Alliance.PLAYER:
-						command_selected_units(Command.Type.MOVE_POINT, event.global_position)
+					for i in len(selected_units):
+						if is_instance_valid(selected_units[i]) and selected_units[i].alliance == Definitions.Alliance.PLAYER:
+							command_selected_units(Command.Type.MOVE_POINT, event.global_position)
 
 func _input(event):
 	if event is InputEventMouseButton:
