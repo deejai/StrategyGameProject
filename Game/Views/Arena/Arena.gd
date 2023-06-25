@@ -18,6 +18,7 @@ var selected_units: Array[ArenaUnit] = []
 
 @onready var nav_area: ReferenceRect = $WireFrame/NavArea
 var nav_node_scene: PackedScene = load("res://Game/Views/Arena/NavNode.tscn")
+var astar2d: AStar2D = AStar2D.new()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -26,12 +27,13 @@ func _ready():
 	var nav_rect: Rect2 = nav_area.get_global_rect()
 	var nav_rect_size: Vector2 = nav_rect.size
 	var nav_origin: Vector2 = nav_area.global_position
-	var n_astar_node_cols: int = 40
+	var n_astar_node_cols: int = 25
 	var n_astar_node_rows: int = roundi(n_astar_node_cols * 1.0  * (nav_rect_size.y/nav_rect_size.x))
 	var astar_node_h_spacing: float = nav_rect_size.x / (1.0 * n_astar_node_cols)
 	var astar_node_v_spacing: float = nav_rect_size.y / (1.0 * n_astar_node_rows - 1.0)
 	print(n_astar_node_cols)
 	print(n_astar_node_rows)
+	var node_id = 0
 	for row_n in n_astar_node_rows:
 		var v_pos: float = astar_node_v_spacing * row_n
 		var h_offset: float = 0.5 * astar_node_h_spacing * (row_n % 2)
@@ -42,13 +44,25 @@ func _ready():
 			)
 
 			var new_node: Node2D = nav_node_scene.instantiate()
+			new_node.init(astar2d, node_id)
 			arena_layer.add_child(new_node)
 			new_node.global_position = node_pos
+
+			astar2d.add_point(node_id, node_pos)
+
+			node_id += 1
 
 	for i in range(6):
 		print(i)
 		var new_unit = arena_unit.instantiate()
 		new_unit.position = viewport.position + Vector2(200 + 100 * (i%2) + 50 * (i/2), 64 + 50 * (i/2))
+		arena_layer.add_child(new_unit)
+
+	for i in range(6):
+		print(i)
+		var new_unit: ArenaUnit = arena_unit.instantiate()
+		new_unit.alliance = Definitions.Alliance.ENEMY
+		new_unit.position = viewport.position + Vector2(200 + 100 * (i%2) + 50 * (i/2), 300 + 64 + 50 * (i/2))
 		arena_layer.add_child(new_unit)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

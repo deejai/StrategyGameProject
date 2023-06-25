@@ -39,6 +39,10 @@ var last_pos: Vector2 = position
 
 var displacements: Array = [100.0, 100.0, 100.0, 100.0, 100.0]
 
+var astar_path: PackedVector2Array = []
+
+var is_first_physics_frame_processed: bool = false
+
 func _ready():
 	for navray_angle in navray_angles:
 		var navray: RayCast2D = RayCast2D.new()
@@ -154,6 +158,8 @@ func _physics_process(delta):
 
 	move_and_slide()
 
+	is_first_physics_frame_processed = true
+
 func _draw():
 	pass
 #	draw_dashed_line(Vector2(-50,-50), Vector2(50, 50), Color.WHITE)
@@ -161,7 +167,8 @@ func _draw():
 #	if selected:
 #		draw_arc(Vector2.ZERO, nav_agent.radius, 0, 2*PI, 50, Color.WHITE)
 
-	draw_circle(nav_agent.get_next_path_position() - position, 15.0 + close_enough_modifier, Color(1,0,0,0.5))
+	if is_first_physics_frame_processed:
+		draw_circle(nav_agent.get_next_path_position() - position, 15.0 + close_enough_modifier, Color(1,0,0,0.5))
 
 func _on_process_timer_timeout():
 	match command.type:
