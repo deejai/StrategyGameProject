@@ -43,11 +43,6 @@ func _ready():
 				v_pos
 			)
 
-			var new_node: Node2D = nav_node_scene.instantiate()
-			new_node.init(astar2d, node_id)
-			arena_layer.add_child(new_node)
-			new_node.global_position = node_pos
-
 			astar2d.add_point(node_id, node_pos)
 			if row_n != 0:
 				# connect up
@@ -64,17 +59,24 @@ func _ready():
 			if col_n != 0:
 				astar2d.connect_points(node_id, node_id - 1)
 
+			var new_node: Node2D = nav_node_scene.instantiate()
+			new_node.init(astar2d, node_id)
+			arena_layer.add_child(new_node)
+			new_node.global_position = node_pos
+
 			node_id += 1
 
 	for i in range(6):
 		print(i)
 		var new_unit = arena_unit.instantiate()
+		new_unit.astar2d = astar2d
 		new_unit.position = viewport.position + Vector2(200 + 100 * (i%2) + 50 * (i/2), 64 + 50 * (i/2))
 		arena_layer.add_child(new_unit)
 
 	for i in range(6):
 		print(i)
 		var new_unit: ArenaUnit = arena_unit.instantiate()
+		new_unit.astar2d = astar2d
 		new_unit.alliance = Definitions.Alliance.ENEMY
 		new_unit.position = viewport.position + Vector2(200 + 100 * (i%2) + 50 * (i/2), 300 + 64 + 50 * (i/2))
 		arena_layer.add_child(new_unit)

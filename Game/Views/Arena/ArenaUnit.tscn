@@ -233,10 +233,6 @@ scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_j22du")
 animation = &"idle_down"
 
-[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
-path_max_distance = 2000.0
-radius = 30.0
-
 [node name="ProcessTimer" type="Timer" parent="."]
 wait_time = 0.1
 autostart = true
@@ -260,8 +256,8 @@ stream = SubResource("AudioStreamRandomizer_itgpf")
 [node name="VoiceMove" type="AudioStreamPlayer2D" parent="."]
 stream = SubResource("AudioStreamRandomizer_greg2")
 
-[connection signal="link_reached" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_link_reached"]
-[connection signal="navigation_finished" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_navigation_finished"]
-[connection signal="path_changed" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_path_changed"]
-[connection signal="target_reached" from="NavigationAgent2D" to="." method="_on_navigation_agent_2d_target_reached"]
+[node name="NavRefreshTimer" type="Timer" parent="."]
+autostart = true
+
 [connection signal="timeout" from="ProcessTimer" to="." method="_on_process_timer_timeout"]
+[connection signal="timeout" from="NavRefreshTimer" to="." method="_on_nav_refresh_timer_timeout"]
