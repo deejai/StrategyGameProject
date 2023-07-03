@@ -138,17 +138,12 @@ script = ExtResource("1_7fl8o")
 layer = 5
 
 [node name="TileMap" type="TileMap" parent="ArenaLayer"]
+visible = false
 z_index = -15
 tile_set = SubResource("TileSet_eve8d")
 cell_quadrant_size = 64
 format = 2
 layer_0/tile_data = PackedInt32Array(65536, 720896, 6, 131072, 720896, 6, 196608, 720896, 6, 262144, 720896, 6, 327680, 720896, 6, 393216, 720896, 6, 393217, 720896, 6, 393218, 720896, 6, 393219, 720896, 6, 393220, 720896, 6, 393221, 720896, 6, 393222, 720896, 6, 393223, 720896, 6, 393224, 720896, 6, 393225, 720896, 6, 393226, 720896, 6, 327690, 720896, 6, 262154, 720896, 6, 196618, 720896, 6, 131082, 720896, 6, 65546, 720896, 6, 65545, 720896, 6, 65544, 720896, 6, 65543, 720896, 6, 131079, 720896, 6, 131078, 720896, 6, 131077, 720896, 6, 131076, 720896, 6, 131075, 720896, 6, 131074, 720896, 6, 131073, 720896, 6, 65537, 720896, 6, 65538, 720896, 6, 65539, 720896, 6, 65540, 720896, 6, 65541, 720896, 6, 65542, 720896, 6, 196609, 720896, 6, 262145, 720896, 6, 262146, 720896, 6, 262147, 720896, 6, 262148, 720896, 6, 262149, 720896, 6, 262150, 720896, 6, 196613, 720896, 6, 196612, 720896, 6, 196611, 720896, 6, 196610, 720896, 6, 327681, 720896, 6, 327682, 720896, 6, 327683, 720896, 6, 327684, 720896, 6, 327685, 720896, 6, 327686, 720896, 6, 327687, 720896, 6, 327688, 720896, 6, 327689, 720896, 6, 262153, 720896, 6, 262152, 720896, 6, 262151, 720896, 6, 196617, 720896, 6, 131080, 720896, 6, 196614, 720896, 6, 196615, 720896, 6, 196616, 720896, 6, 131081, 720896, 6, 0, 720896, 6, 1, 720896, 6, 2, 720896, 6, 3, 720896, 6, 4, 720896, 6, 5, 720896, 6, 6, 720896, 6, 7, 720896, 6, 8, 720896, 6, 9, 720896, 6, 10, 720896, 6, 65547, 720896, 6, 131083, 720896, 6, 196619, 720896, 6, 262155, 720896, 6, 327691, 720896, 6, 393227, 720896, 6, 11, 720896, 6)
-
-[node name="Arena" type="Control" parent="ArenaLayer"]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 
 [node name="StaticBody2D" type="StaticBody2D" parent="ArenaLayer"]
 
@@ -192,12 +187,6 @@ layer_0/tile_data = PackedInt32Array(10, 262144, 0, 9, 262144, 0, 8, 262144, 0, 
 [node name="WireFrame" type="CanvasLayer" parent="."]
 layer = 50
 
-[node name="Viewport" type="ReferenceRect" parent="WireFrame"]
-offset_right = 767.0
-offset_bottom = 461.0
-border_color = Color(0.211765, 1, 0, 1)
-metadata/_edit_lock_ = true
-
 [node name="NavArea" type="ReferenceRect" parent="WireFrame"]
 offset_left = 32.0
 offset_top = 39.0
@@ -205,5 +194,11 @@ offset_right = 741.0
 offset_bottom = 440.0
 border_color = Color(0.815686, 0, 0, 1)
 
-[connection signal="gui_input" from="WireFrame/Viewport" to="." method="_on_viewport_gui_input"]
+[node name="Viewport" type="ReferenceRect" parent="WireFrame"]
+offset_right = 767.0
+offset_bottom = 461.0
+border_color = Color(0.211765, 1, 0, 1)
+metadata/_edit_lock_ = true
+
 [connection signal="gui_input" from="WireFrame/NavArea" to="." method="_on_viewport_gui_input"]
+[connection signal="gui_input" from="WireFrame/Viewport" to="." method="_on_viewport_gui_input"]

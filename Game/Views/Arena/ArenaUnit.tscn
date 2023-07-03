@@ -242,14 +242,12 @@ wait_time = 0.1
 autostart = true
 
 [node name="SelectionCircle" type="AnimatedSprite2D" parent="."]
-visible = false
 z_index = -5
 position = Vector2(0, 26)
 scale = Vector2(1.5625, 0.976563)
 sprite_frames = SubResource("SpriteFrames_vys5n")
 
 [node name="NavRays" type="Node2D" parent="."]
-visible = false
 
 [node name="SpriteDirectionTimer" type="Timer" parent="."]
 wait_time = 0.18

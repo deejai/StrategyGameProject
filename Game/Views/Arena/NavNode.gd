@@ -21,17 +21,15 @@ func _on_body_entered(body):
 	counter += 1
 	queue_redraw()
 
-	if counter == 1:
-		var astar2d: AStar2D = astar_ref.get_ref()
-		astar2d.set_point_disabled(node_id, false)
+	var astar2d: AStar2D = astar_ref.get_ref()
+	astar2d.set_point_weight_scale(node_id, astar2d.get_point_weight_scale(node_id) + body.nav_weight)
 
 func _on_body_exited(body):
 	counter -= 1
 	queue_redraw()
 
-	if counter == 0:
-		var astar2d: AStar2D = astar_ref.get_ref()
-		astar2d.set_point_disabled(node_id, true)
+	var astar2d: AStar2D = astar_ref.get_ref()
+	astar2d.set_point_weight_scale(node_id, astar2d.get_point_weight_scale(node_id) - body.nav_weight)
 
 func _draw():
 	pass

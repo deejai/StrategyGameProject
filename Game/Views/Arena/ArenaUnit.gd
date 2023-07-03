@@ -2,6 +2,8 @@ extends CharacterBody2D
 
 class_name ArenaUnit
 
+@export var nav_weight: float = 1.0
+
 @export var max_speed: float = 100.0
 var speed: float = 0.0
 const turn_rate: float = 2 * PI

@@ -4,11 +4,14 @@ var arena_unit = load("res://Game/Views/Arena/ArenaUnit.tscn")
 
 @onready var selection_rect = $HUDLayer/SelectionRect
 @onready var viewport = $WireFrame/Viewport
-@onready var arena_layer = $ArenaLayer
+@onready var arena_layer: CanvasLayer = $ArenaLayer
+
+var nav_node_scene: PackedScene = load("res://Game/Views/Arena/NavNode.tscn")
+@onready var nav_area: ReferenceRect = $WireFrame/NavArea
 
 var viewport_leftclick_ctx = ClickContext.new()
 
-@onready var arena_space = $ArenaLayer/Arena.get_world_2d().direct_space_state
+@onready var arena_space = get_world_2d().direct_space_state
 var physics_query = PhysicsShapeQueryParameters2D.new()
 var click_query_shape: CircleShape2D = CircleShape2D.new()
 
@@ -16,11 +19,8 @@ var selected_units: Array[ArenaUnit] = []
 
 @export var point_select_collider: CollisionShape2D
 
-@onready var nav_area: ReferenceRect = $WireFrame/NavArea
-var nav_node_scene: PackedScene = load("res://Game/Views/Arena/NavNode.tscn")
-var astar2d: AStar2D = AStar2D.new()
+@onready var astar2d: AStar2D = AStar2D.new()
 
-# Called when the node enters the scene tree for the first time.
 func _ready():
 	click_query_shape.radius = 5.0
 
@@ -28,7 +28,7 @@ func _ready():
 	var nav_rect_size: Vector2 = nav_rect.size
 	var nav_origin: Vector2 = nav_area.global_position
 	var n_astar_node_cols: int = 25
-	var n_astar_node_rows: int = roundi(n_astar_node_cols * 1.0  * (nav_rect_size.y/nav_rect_size.x))
+	var n_astar_node_rows: int = roundi(n_astar_node_cols * (1.0 / sqrt(0.75)) * (nav_rect_size.y/nav_rect_size.x))
 	var astar_node_h_spacing: float = nav_rect_size.x / (1.0 * n_astar_node_cols)
 	var astar_node_v_spacing: float = nav_rect_size.y / (1.0 * n_astar_node_rows - 1.0)
 	print(n_astar_node_cols)
@@ -49,6 +49,20 @@ func _ready():
 			new_node.global_position = node_pos
 
 			astar2d.add_point(node_id, node_pos)
+			if row_n != 0:
+				# connect up
+				astar2d.connect_points(node_id, node_id - n_astar_node_cols)
+
+				# connect up -> offset
+				var up_forward: bool = h_offset > 0.0
+				if up_forward and (col_n != n_astar_node_cols-1):
+					astar2d.connect_points(node_id, node_id - n_astar_node_cols + 1)
+				elif  !up_forward and (col_n != 0):
+					astar2d.connect_points(node_id, node_id - n_astar_node_cols + -1)
+
+			# connect left
+			if col_n != 0:
+				astar2d.connect_points(node_id, node_id - 1)
 
 			node_id += 1
 
@@ -185,3 +199,9 @@ func command_selected_units(type: Command.Type, target=null):
 		for selected_unit in valid_units:
 			if is_instance_valid(selected_unit):
 				selected_unit.set_task(type, target)
+
+func _draw():
+	for node_id in astar2d.get_point_ids():
+		var connections = astar2d.get_point_connections(node_id)
+		for connection in connections:
+			draw_line(astar2d.get_point_position(node_id), astar2d.get_point_position(connection), Color.RED)
